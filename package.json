@@ -1,0 +1,15 @@
+{
+  "name": "news_js",
+  "version": "1.0.0",
+  "description": "parsing text to create specific html",
+  "main": "red.js",
+  "dependencies": {
+    "jsdom": "^18.1.1",
+    "package-lock.json": "^1.0.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}
