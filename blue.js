@@ -4,9 +4,14 @@ const { type } = require("os");
 const { JSDOM } = jsdom;
 const { window } = new JSDOM();
 const { document } = new JSDOM("").window;
+let textToHtml = require("./service");
 global.document = document;
 
 function readFile() {
+  // textToHtml.readRedFile();
+
+  // copyRedHtmlToInput("sis.html", "input.txt").then(console.log("asdf"));
+
   fs.readFile("./input.txt", "utf8", function (err, data) {
     if (err) {
       return console.log(err);
@@ -43,6 +48,18 @@ function deleteFileIfExists() {
   } catch (error) {
     console.log(error);
   }
+}
+
+async function copyRedHtmlToInput(src, dest) {
+  fs.copyFile(src, dest, (error) => {
+    // incase of any error
+    if (error) {
+      console.error(error);
+      return;
+    }
+
+    console.log("Copied Successfully!");
+  });
 }
 
 deleteFileIfExists;
