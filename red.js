@@ -1,3 +1,3 @@
 let textToHtml = require("./service");
 
-textToHtml.readRedFile();
+textToHtml.main().then(() => console.log("utsav"));

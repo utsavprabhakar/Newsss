@@ -12,6 +12,7 @@
  */
 
 const fs = require("fs");
+const fsPromise = require("fs").promises;
 const jsdom = require("jsdom");
 const { JSDOM } = jsdom;
 const { window } = new JSDOM();
@@ -100,43 +101,42 @@ class News {
   }
 }
 
-exports.readRedFile = () => {
-  fs.readFile("./input.txt", "utf8", function (err, data) {
-    deleteFileIfExists();
+async function readFile() {
+  return await fsPromise.readFile("./input.txt", "utf8");
+}
 
-    if (err) {
-      console.log("error");
-    }
-    const splitLines = (str) => str.split(/\r?\n/);
-    lines = splitLines(data)
-      .map((line) => {
-        return line.trim();
-      })
-      .filter((line) => line !== "");
+function splitTextToLines(inputData) {
+  const splitLines = (str) => str.split(/\r?\n/);
+  lines = splitLines(inputData)
+    .map((line) => {
+      return line.trim();
+    })
+    .filter((line) => line !== "");
+}
 
-    parseInputFile();
-    let finalHtmlString = "";
+//   parseInputFile();
 
-    for (var i = 0; i < newsList.length; i++) {
-      console.log(newsList[i].section);
-      console.log(newsList[i].sectionNumber);
-      finalHtmlString =
-        finalHtmlString +
-        createHtml(
-          newsList[i].section,
-          newsList[i].heading,
-          newsList[i].intro,
-          newsList[i].riskComment,
-          newsList[i].sectionNumber,
-          newsList[i].newsNumber
-        );
-    }
+async function createFinalHTML() {
+  let finalHtmlString = "";
 
-    finalData = getHeaderHtml() + finalHtmlString + getFooterHtml();
-    writeFile(process(finalData));
-    // console.log(getHeaderHtml() + finalHtmlString + getFooterHtml());
-  });
-};
+  for (var i = 0; i < newsList.length; i++) {
+    console.log(newsList[i].section);
+    console.log(newsList[i].sectionNumber);
+    finalHtmlString =
+      finalHtmlString +
+      createHtml(
+        newsList[i].section,
+        newsList[i].heading,
+        newsList[i].intro,
+        newsList[i].riskComment,
+        newsList[i].sectionNumber,
+        newsList[i].newsNumber
+      );
+  }
+
+  finalData = getHeaderHtml() + finalHtmlString + getFooterHtml();
+  return await writeFile(process(finalData));
+}
 
 function parseInputFile() {
   let sectionNumber = -1;
@@ -386,12 +386,15 @@ function getFooterHtml() {
   );
 }
 
-function writeFile(data) {
-  fs.writeFile("./sis.html", data, (err) => {
-    // In case of a error throw err.
-    if (err) throw err;
-    console.log("success");
-  });
+async function writeFile(data) {
+  await fsPromise.writeFile("./sis.html", data);
+  return Promise.resolve("successfully written");
+  //   fs.writeFile("./sis.html", data, (err) => {
+  //     // In case of a error throw err.
+  //     if (err) throw err;
+  //     return
+  //     console.log("success");
+  //   });
 }
 
 function process(str) {
@@ -430,3 +433,21 @@ function deleteFileIfExists() {
     console.log(error);
   }
 }
+
+async function main() {
+  const inputData = await readFile();
+  splitTextToLines(inputData);
+  parseInputFile();
+  await createFinalHTML();
+  return Promise.resolve("Text -> Red html done");
+}
+
+// function sleep(milliseconds) {
+//   const date = Date.now();
+//   let currentDate = null;
+//   do {
+//     currentDate = Date.now();
+//   } while (currentDate - date < milliseconds);
+// }
+
+module.exports.main = main;

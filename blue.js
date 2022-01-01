@@ -1,4 +1,5 @@
 const fs = require("fs");
+const fsPromise = require("fs").promises;
 const jsdom = require("jsdom");
 const { type } = require("os");
 const { JSDOM } = jsdom;
@@ -7,36 +8,27 @@ const { document } = new JSDOM("").window;
 let textToHtml = require("./service");
 global.document = document;
 
-function readFile() {
-  // textToHtml.readRedFile();
-
-  // copyRedHtmlToInput("sis.html", "input.txt").then(console.log("asdf"));
-
-  fs.readFile("./input.txt", "utf8", function (err, data) {
-    if (err) {
-      return console.log(err);
-    }
-
-    data = data.replace(/#b91c12/g, "#38B3FF");
-    data = data.replace(/<b>East<\/b>/g, "<b>East and North East</b>");
-    data = data.replace(
-      /http:\/\/kcom.work\/sis-emailer4\/01.jpg/g,
-      "http://kcom.work/slv-images/01.jpg"
-    );
-    data = data.replace(
-      /http:\/\/kcom.work\/sis-emailer4\/02.jpg/g,
-      "http://kcom.work/slv-images/footer.png"
-    );
-
-    writeFile(data);
-  });
+async function readFile() {
+  return await fsPromise.readFile("./input.txt", "utf8");
 }
 
-function writeFile(data) {
-  fs.writeFile("./slv.html", data, (err) => {
-    // In case of a error throw err.
-    if (err) throw err;
-  });
+function changeRedToBlue(data) {
+  data = data.replace(/#b91c12/g, "#38B3FF");
+  data = data.replace(/<b>East<\/b>/g, "<b>East and North East</b>");
+  data = data.replace(
+    /http:\/\/kcom.work\/sis-emailer4\/01.jpg/g,
+    "http://kcom.work/slv-images/01.jpg"
+  );
+  data = data.replace(
+    /http:\/\/kcom.work\/sis-emailer4\/02.jpg/g,
+    "http://kcom.work/slv-images/footer.png"
+  );
+
+  return data;
+}
+
+async function writeFile(data) {
+  return await fsPromise.writeFile("./slv.html", data);
 }
 
 function deleteFileIfExists() {
@@ -51,16 +43,15 @@ function deleteFileIfExists() {
 }
 
 async function copyRedHtmlToInput(src, dest) {
-  fs.copyFile(src, dest, (error) => {
-    // incase of any error
-    if (error) {
-      console.error(error);
-      return;
-    }
-
-    console.log("Copied Successfully!");
-  });
+  return await fsPromise.copyFile(src, dest);
 }
 
-deleteFileIfExists;
-readFile();
+async function main() {
+  await textToHtml.main();
+  await copyRedHtmlToInput("sis.html", "input.txt");
+  let inputData = await readFile();
+  inputData = changeRedToBlue(inputData);
+  writeFile(inputData);
+}
+
+main();
