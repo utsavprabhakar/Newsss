@@ -120,8 +120,6 @@ async function createFinalHTML() {
   let finalHtmlString = "";
 
   for (var i = 0; i < newsList.length; i++) {
-    console.log(newsList[i].section);
-    console.log(newsList[i].sectionNumber);
     finalHtmlString =
       finalHtmlString +
       createHtml(
@@ -146,11 +144,6 @@ function parseInputFile() {
 
   for (let lineNumber in lines) {
     let line = lines[lineNumber];
-    console.log(line);
-    // if line == section, all counters return to 0, ++section  continue
-    // if prev line == section || prev line == risk comment, make new object, displacement = 0;
-    // if line == risk comment, newsCounter++
-    // displacement ++;
 
     if (isSection(line)) {
       currentSection = getSection(line);
@@ -226,37 +219,28 @@ function getContentFromLine(line, newsFieldName) {
     return line;
   }
 
-  let riskCommentOption1 = "risk comment:";
-  let riskCommentOption2 = "risk comment :";
-  let riskCommentOption3 = "risk comments:";
-  let riskCommentOption4 = "risk comments :";
+  //newsfieldname = RISKCOMMENT
 
-  if (line.toLowerCase().indexOf(riskCommentOption1) !== -1) {
+  const riskCommentOptions = [
+    "risk comment:",
+    "risk comment :",
+    "risk comments:",
+    "risk comments :",
+  ];
+
+  let lineLowerCase = line.toLowerCase();
+
+  let riskCommentText = riskCommentOptions.find((riskComment) => {
+    return lineLowerCase.indexOf(riskComment) !== -1;
+  });
+
+  // covid case -> no risk commennt in covid
+  if (riskCommentText === undefined) return line;
+  else if (riskCommentText === -1) throw "Invalid risk Comment line";
+  else
     return line.substring(
-      line.toLowerCase().indexOf(riskCommentOption1) + riskCommentOption1.length
+      lineLowerCase.indexOf(riskCommentText) + riskCommentText.length
     );
-  }
-
-  if (line.toLowerCase().indexOf(riskCommentOption2) !== -1) {
-    return line.substring(
-      line.toLowerCase().indexOf(riskCommentOption2) + riskCommentOption2.length
-    );
-  }
-
-  if (line.toLowerCase().indexOf(riskCommentOption3) !== -1) {
-    return line.substring(
-      line.toLowerCase().indexOf(riskCommentOption3) + riskCommentOption3.length
-    );
-  }
-
-  if (line.toLowerCase().indexOf(riskCommentOption4) !== -1) {
-    return line.substring(
-      line.toLowerCase().indexOf(riskCommentOption4) + riskCommentOption4.length
-    );
-  }
-
-  //TODO error if no risk
-  return line;
 }
 
 function createHtml(section, heading, intro, risk, sectionNumber, newsNumber) {
@@ -389,12 +373,6 @@ function getFooterHtml() {
 async function writeFile(data) {
   await fsPromise.writeFile("./sis.html", data);
   return Promise.resolve("successfully written");
-  //   fs.writeFile("./sis.html", data, (err) => {
-  //     // In case of a error throw err.
-  //     if (err) throw err;
-  //     return
-  //     console.log("success");
-  //   });
 }
 
 function process(str) {
